@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts - Thermal Weapon Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span>Thermal Detection</span>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" onclick="openDetectionModal()">
+                <i class="fas fa-camera"></i>
+                <span>Detect</span>
+            </a>
+            <a href="{{ url_for('alerts') }}" class="nav-link active">
+                <i class="fas fa-bell"></i>
+                <span>Alerts</span>
+                <span class="badge" id="alertBadge">0</span>
+            </a>
+        </div>
+        
+        <div class="nav-user">
+            <div class="user-menu">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="username">{{ session.username }}</span>
+                    <span class="user-role">Security Operator</span>
+                </div>
+                <div class="user-dropdown">
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-user-cog"></i>
+                        Profile
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-bell"></i> Security Alerts</h1>
+            <p>Monitor and manage weapon detection alerts</p>
+        </div>
+
+        <div class="alerts-container">
+            {% if alerts %}
+                {% for alert in alerts %}
+                <div class="alert-card {{ 'critical' if alert.alert_type == 'high_confidence' else 'warning' }}">
+                    <div class="alert-header">
+                        <div class="alert-icon">
+                            <i class="fas fa-{{ 'exclamation-triangle' if alert.alert_type == 'high_confidence' else 'exclamation-circle' }}"></i>
+                        </div>
+                        <div class="alert-info">
+                            <h3>{{ alert.message }}</h3>
+                            <p class="alert-time">{{ alert.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        </div>
+                        <div class="alert-actions">
+                            <button class="btn btn-sm btn-primary" onclick="acknowledgeAlert({{ alert.id }})">
+                                <i class="fas fa-check"></i>
+                                Acknowledge
+                            </button>
+                        </div>
+                    </div>
+                    <div class="alert-details">
+                        <div class="alert-meta">
+                            <span class="alert-type">{{ alert.alert_type.replace('_', ' ').title() }}</span>
+                            <span class="alert-severity {{ 'critical' if alert.alert_type == 'high_confidence' else 'high' }}">
+                                {{ 'Critical' if alert.alert_type == 'high_confidence' else 'High' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-alerts">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>No Alerts</h3>
+                    <p>All clear! No security alerts at this time.</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

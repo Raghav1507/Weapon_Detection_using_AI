@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Thermal Weapon Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span>Thermal Detection</span>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-link active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" onclick="openDetectionModal()">
+                <i class="fas fa-camera"></i>
+                <span>Detect</span>
+            </a>
+            <a href="{{ url_for('alerts') }}" class="nav-link">
+                <i class="fas fa-bell"></i>
+                <span>Alerts</span>
+                <span class="badge" id="alertBadge">0</span>
+            </a>
+        </div>
+        
+        <div class="nav-user">
+            <div class="user-menu">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="username">{{ session.username }}</span>
+                    <span class="user-role">Security Operator</span>
+                </div>
+                <div class="user-dropdown">
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-user-cog"></i>
+                        Profile
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <div class="welcome-content">
+                <h1>Welcome back, {{ session.username }}!</h1>
+                <p>Monitor and detect weapons in thermal images with our advanced AI system</p>
+            </div>
+            <div class="welcome-actions">
+                <button class="btn btn-primary" onclick="openDetectionModal()">
+                    <i class="fas fa-camera"></i>
+                    Start Detection
+                </button>
+                <button class="btn btn-secondary" onclick="viewAlerts()">
+                    <i class="fas fa-bell"></i>
+                    View Alerts
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_detections }}</h3>
+                    <p>Total Scans</p>
+                </div>
+                <div class="stat-trend">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+12%</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ weapon_detections }}</h3>
+                    <p>Weapons Detected</p>
+                </div>
+                <div class="stat-trend danger">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+5%</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_detections - weapon_detections }}</h3>
+                    <p>Safe Scans</p>
+                </div>
+                <div class="stat-trend success">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+8%</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>2.3s</h3>
+                    <p>Avg. Response Time</p>
+                </div>
+                <div class="stat-trend success">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>-15%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Detection Interface -->
+            <div class="detection-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-camera"></i> Weapon Detection</h2>
+                    <button class="btn btn-primary" onclick="openDetectionModal()">
+                        <i class="fas fa-plus"></i>
+                        New Detection
+                    </button>
+                </div>
+                
+                <div class="detection-interface">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h3>Upload Thermal Image</h3>
+                            <p>Drag and drop your thermal image here or click to browse</p>
+                            <input type="file" id="imageInput" accept="image/*" hidden>
+                            <button class="btn btn-secondary" onclick="document.getElementById('imageInput').click()">
+                                <i class="fas fa-folder-open"></i>
+                                Choose File
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="detection-results" id="detectionResults" style="display: none;">
+                        <div class="result-header">
+                            <h3>Detection Results</h3>
+                            <div class="result-actions">
+                                <button class="btn btn-sm btn-secondary" onclick="downloadResult()">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="clearResults()">
+                                    <i class="fas fa-times"></i>
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div class="result-content">
+                            <div class="result-image">
+                                <img id="resultImage" alt="Detection Result">
+                            </div>
+                            <div class="result-details">
+                                <div class="detection-count">
+                                    <span class="count" id="detectionCount">0</span>
+                                    <span class="label">Weapons Detected</span>
+                                </div>
+                                <div class="confidence-list" id="confidenceList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Alerts -->
+            <div class="alerts-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-bell"></i> Recent Alerts</h2>
+                    <a href="{{ url_for('alerts') }}" class="btn btn-sm btn-secondary">View All</a>
+                </div>
+                
+                <div class="alerts-list">
+                    {% for alert in recent_alerts %}
+                    <div class="alert-item {{ 'critical' if alert.alert_type == 'high_confidence' else 'warning' }}">
+                        <div class="alert-icon">
+                            <i class="fas fa-{{ 'exclamation-triangle' if alert.alert_type == 'high_confidence' else 'exclamation-circle' }}"></i>
+                        </div>
+                        <div class="alert-content">
+                            <h4>{{ alert.message }}</h4>
+                            <p>{{ alert.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        </div>
+                        <div class="alert-actions">
+                            <button class="btn btn-sm btn-primary" onclick="acknowledgeAlert({{ alert.id }})">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-alerts">
+                        <i class="fas fa-check-circle"></i>
+                        <p>No recent alerts</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Detections -->
+        <div class="recent-detections">
+            <div class="panel-header">
+                <h2><i class="fas fa-history"></i> Recent Detections</h2>
+                <a href="#" class="btn btn-sm btn-secondary">View All</a>
+            </div>
+            
+            <div class="detections-list">
+                {% for detection in recent_detections %}
+                <div class="detection-item">
+                    <div class="detection-info">
+                        <div class="detection-id">#{{ detection.id }}</div>
+                        <div class="detection-time">{{ detection.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                    </div>
+                    <div class="detection-status">
+                        {% set detections_data = detection.detections|from_json %}
+                        {% if detections_data %}
+                            <span class="status-badge danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ detections_data|length }} weapon(s) detected
+                            </span>
+                        {% else %}
+                            <span class="status-badge success">
+                                <i class="fas fa-check-circle"></i>
+                                No threats detected
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="detection-actions">
+                        <a href="{{ url_for('view_detection', detection_id=detection.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye"></i>
+                            View
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-detections">
+                    <i class="fas fa-camera"></i>
+                    <p>No recent detections</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Detection Modal -->
+    <div class="modal" id="detectionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-camera"></i> Weapon Detection</h2>
+                <button class="modal-close" onclick="closeDetectionModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="detection-interface">
+                    <div class="upload-area" id="modalUploadArea">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h3>Upload Thermal Image</h3>
+                            <p>Drag and drop your thermal image here or click to browse</p>
+                            <input type="file" id="modalImageInput" accept="image/*" hidden>
+                            <button class="btn btn-primary" onclick="document.getElementById('modalImageInput').click()">
+                                <i class="fas fa-folder-open"></i>
+                                Choose File
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="detection-progress" id="detectionProgress" style="display: none;">
+                        <div class="progress-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <p>Analyzing image for weapons...</p>
+                    </div>
+                    
+                    <div class="detection-results" id="modalDetectionResults" style="display: none;">
+                        <div class="result-image">
+                            <img id="modalResultImage" alt="Detection Result">
+                        </div>
+                        <div class="result-details">
+                            <div class="detection-count">
+                                <span class="count" id="modalDetectionCount">0</span>
+                                <span class="label">Weapons Detected</span>
+                            </div>
+                            <div class="confidence-list" id="modalConfidenceList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Notification -->
+    <div class="alert-notification" id="alertNotification" style="display: none;">
+        <div class="alert-content">
+            <div class="alert-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="alert-message">
+                <h4>Weapon Detected!</h4>
+                <p id="alertMessage">A weapon has been detected in the uploaded image.</p>
+            </div>
+            <button class="alert-close" onclick="closeAlert()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

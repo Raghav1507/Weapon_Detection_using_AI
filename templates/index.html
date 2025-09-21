@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermal Weapon Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-shield-alt"></i> Thermal Weapon Detection System</h1>
+            <p>Advanced AI-powered thermal imaging weapon detection using YOLO</p>
+        </header>
+
+        <main class="main-content">
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Upload Thermal Image</h3>
+                        <p>Drag and drop your thermal image here or click to browse</p>
+                        <input type="file" id="imageInput" accept="image/*" hidden>
+                        <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
+                            <i class="fas fa-folder-open"></i> Choose File
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <h3><i class="fas fa-eye"></i> Image Preview</h3>
+                <div class="image-container">
+                    <img id="previewImage" alt="Preview">
+                </div>
+                <button class="detect-btn" id="detectBtn">
+                    <i class="fas fa-search"></i> Detect Weapons
+                </button>
+            </div>
+
+            <div class="loading-section" id="loadingSection" style="display: none;">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Analyzing image for weapons...</p>
+                </div>
+            </div>
+
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h3><i class="fas fa-chart-line"></i> Detection Results</h3>
+                <div class="results-container">
+                    <div class="detection-info">
+                        <div class="detection-count">
+                            <span class="count" id="detectionCount">0</span>
+                            <span class="label">Weapons Detected</span>
+                        </div>
+                        <div class="confidence-info" id="confidenceInfo"></div>
+                    </div>
+                    <div class="result-image-container">
+                        <img id="resultImage" alt="Detection Result">
+                    </div>
+                </div>
+                <button class="reset-btn" onclick="resetDetection()">
+                    <i class="fas fa-redo"></i> Analyze Another Image
+                </button>
+            </div>
+
+            <div class="error-section" id="errorSection" style="display: none;">
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="errorText"></span>
+                </div>
+                <button class="retry-btn" onclick="resetDetection()">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 Thermal Weapon Detection System. Powered by YOLO AI.</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

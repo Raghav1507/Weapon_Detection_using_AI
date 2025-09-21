@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detection Details - Thermal Weapon Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .image-container {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+        
+        .detection-image {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+        }
+        
+        .no-image {
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .no-image i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        
+        .detection-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .detection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .detection-class {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .confidence-score {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .confidence-value {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .confidence-value.high {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .confidence-value.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .confidence-value.low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .detection-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            font-size: 14px;
+        }
+        
+        .detection-details label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+        
+        .confidence-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .confidence-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .confidence-label {
+            min-width: 120px;
+            font-weight: 500;
+        }
+        
+        .confidence-track {
+            flex: 1;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #dc3545, #ffc107, #28a745);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .confidence-percentage {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span>Thermal Detection</span>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" onclick="openDetectionModal()">
+                <i class="fas fa-camera"></i>
+                <span>Detect</span>
+            </a>
+            <a href="{{ url_for('alerts') }}" class="nav-link">
+                <i class="fas fa-bell"></i>
+                <span>Alerts</span>
+            </a>
+        </div>
+        
+        <div class="nav-user">
+            <div class="user-menu">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="username">{{ session.username }}</span>
+                    <span class="user-role">Security Operator</span>
+                </div>
+                <div class="user-dropdown">
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-user-cog"></i>
+                        Profile
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <a href="{{ url_for('dashboard') }}" class="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </a>
+                    <h1>Detection Details</h1>
+                </div>
+                <div class="header-right">
+                    <span class="detection-id">ID: #{{ detection.id }}</span>
+                </div>
+            </div>
+
+            <!-- Detection Info Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-crosshairs"></i>
+                        Detection Information
+                    </h2>
+                    <span class="timestamp">{{ detection.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                </div>
+                <div class="card-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Detection ID</label>
+                            <span class="value">{{ detection.id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Timestamp</label>
+                            <span class="value">{{ detection.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Alert Status</label>
+                            <span class="value">
+                                {% if detection.alert_sent %}
+                                    <span class="badge alert">Alert Sent</span>
+                                {% else %}
+                                    <span class="badge info">No Alert</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <label>Total Detections</label>
+                            <span class="value">{{ detection.detections|from_json|length }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Image -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-image"></i>
+                        Detection Output Image
+                    </h2>
+                </div>
+                <div class="card-content">
+                    <div class="image-container">
+                        <img src="{{ url_for('serve_image', filename=detection.image_path) }}" 
+                             alt="Detection Output" 
+                             class="detection-image"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="no-image" style="display: none;">
+                            <i class="fas fa-image"></i>
+                            <p>Output image not available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detection Results -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-search"></i>
+                        Detection Results
+                    </h2>
+                </div>
+                <div class="card-content">
+                    {% set detections_data = detection.detections|from_json %}
+                    {% if detections_data %}
+                        <div class="detections-list">
+                            {% for detection_item in detections_data %}
+                                <div class="detection-item">
+                                    <div class="detection-header">
+                                        <div class="detection-class">
+                                            <i class="fas fa-crosshairs"></i>
+                                            <span class="class-name">{{ detection_item.class }}</span>
+                                        </div>
+                                        <div class="confidence-score">
+                                            <span class="confidence-label">Confidence:</span>
+                                            <span class="confidence-value {{ 'high' if detection_item.confidence > 0.8 else 'medium' if detection_item.confidence > 0.5 else 'low' }}">
+                                                {{ "%.1f"|format(detection_item.confidence * 100) }}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="detection-details">
+                                        <div class="bbox-info">
+                                            <label>Bounding Box:</label>
+                                            <span class="bbox-coords">
+                                                ({{ detection_item.bbox[0] }}, {{ detection_item.bbox[1] }}) 
+                                                to ({{ detection_item.bbox[2] }}, {{ detection_item.bbox[3] }})
+                                            </span>
+                                        </div>
+                                        <div class="bbox-dimensions">
+                                            <label>Dimensions:</label>
+                                            <span class="dimensions">
+                                                {{ detection_item.bbox[2] - detection_item.bbox[0] }} × {{ detection_item.bbox[3] - detection_item.bbox[1] }} pixels
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-detections">
+                            <i class="fas fa-search"></i>
+                            <h3>No Objects Detected</h3>
+                            <p>No weapons or suspicious objects were detected in this image.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Confidence Scores -->
+            {% set confidence_scores = detection.confidence_scores|from_json %}
+            {% if confidence_scores %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-chart-bar"></i>
+                            Confidence Analysis
+                        </h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="confidence-chart">
+                            {% for score in confidence_scores %}
+                                <div class="confidence-bar">
+                                    <div class="confidence-label">Detection {{ loop.index }}</div>
+                                    <div class="confidence-track">
+                                        <div class="confidence-fill" data-width="{{ score * 100 }}"></div>
+                                    </div>
+                                    <div class="confidence-percentage">{{ "%.1f"|format(score * 100) }}%</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Detection Modal (if needed) -->
+    <div id="detectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Upload Image for Detection</h2>
+                <span class="close" onclick="closeDetectionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="detectionForm" enctype="multipart/form-data">
+                    <div class="upload-area" onclick="document.getElementById('imageInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload image or drag and drop</p>
+                        <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="closeDetectionModal()" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Analyze Image</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    <script>
+        // Detection modal functions
+        function openDetectionModal() {
+            document.getElementById('detectionModal').style.display = 'block';
+        }
+
+        function closeDetectionModal() {
+            document.getElementById('detectionModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('detectionModal');
+            if (event.target === modal) {
+                closeDetectionModal();
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('detectionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const imageInput = document.getElementById('imageInput');
+            
+            if (imageInput.files.length === 0) {
+                alert('Please select an image first.');
+                return;
+            }
+            
+            formData.append('image', imageInput.files[0]);
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Analyzing...';
+            submitBtn.disabled = true;
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to dashboard to see results
+                    window.location.href = '/dashboard';
+                } else {
+                    alert('Detection failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during detection.');
+            })
+            .finally(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                closeDetectionModal();
+            });
+        });
+
+        // Handle file input change
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const uploadArea = document.querySelector('.upload-area');
+                uploadArea.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <p>Selected: ${file.name}</p>
+                    <small>Click to change</small>
+                `;
+            }
+        });
+
+        // Set confidence bar widths
+        document.addEventListener('DOMContentLoaded', function() {
+            const confidenceBars = document.querySelectorAll('.confidence-fill');
+            confidenceBars.forEach(bar => {
+                const width = bar.getAttribute('data-width');
+                bar.style.width = width + '%';
+            });
+        });
+    </script>
+</body>
+</html>
