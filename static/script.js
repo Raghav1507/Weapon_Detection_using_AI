@@ -1,3 +1,10 @@
+// Modern Weapon Detection System JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
+    initializeAnimations();
+    initializeParallax();
+});
+
 // DOM Elements
 const uploadArea = document.getElementById('uploadArea');
 const imageInput = document.getElementById('imageInput');
@@ -11,14 +18,79 @@ const detectionCount = document.getElementById('detectionCount');
 const confidenceInfo = document.getElementById('confidenceInfo');
 const resultImage = document.getElementById('resultImage');
 const errorText = document.getElementById('errorText');
+const detectionStatus = document.getElementById('detectionStatus');
 
 // State
 let selectedFile = null;
+let isProcessing = false;
 
-// Initialize event listeners
-document.addEventListener('DOMContentLoaded', function() {
+function initializeApp() {
     initializeEventListeners();
-});
+    addModernInteractions();
+    initializeProgressBar();
+}
+
+function initializeAnimations() {
+    // Stagger animation for hero elements
+    const heroElements = document.querySelectorAll('.hero-content > *');
+    heroElements.forEach((element, index) => {
+        element.style.animationDelay = `${index * 0.2}s`;
+        element.classList.add('fade-in-up');
+    });
+    
+    // Animate stats
+    const stats = document.querySelectorAll('.stat');
+    stats.forEach((stat, index) => {
+        stat.style.animationDelay = `${index * 0.1}s`;
+        stat.classList.add('scale-in');
+    });
+}
+
+function initializeParallax() {
+    const shapes = document.querySelectorAll('.shape');
+    const particles = document.querySelectorAll('.particle');
+    
+    document.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+        
+        shapes.forEach((shape, index) => {
+            const speed = (index + 1) * 0.5;
+            const x = (mouseX - 0.5) * speed;
+            const y = (mouseY - 0.5) * speed;
+            shape.style.transform = `translate(${x}px, ${y}px)`;
+        });
+        
+        particles.forEach((particle, index) => {
+            const speed = (index + 1) * 0.3;
+            const x = (mouseX - 0.5) * speed;
+            const y = (mouseY - 0.5) * speed;
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+        });
+    });
+}
+
+function addModernInteractions() {
+    // Add ripple effect to buttons
+    const buttons = document.querySelectorAll('.btn, button');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            addRippleEffect(this, e);
+        });
+    });
+    
+    // Add hover effects to cards
+    const cards = document.querySelectorAll('.stat, .upload-area, .detection-info');
+    cards.forEach(card => {
+        card.classList.add('hover-lift');
+    });
+    
+    // Add glow effect to interactive elements
+    const interactiveElements = document.querySelectorAll('.upload-btn, .detect-btn');
+    interactiveElements.forEach(element => {
+        element.classList.add('hover-glow');
+    });
+}
 
 function initializeEventListeners() {
     // File input change
@@ -32,6 +104,80 @@ function initializeEventListeners() {
     
     // Detect button
     detectBtn.addEventListener('click', handleDetection);
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+    
+    // Window events
+    window.addEventListener('resize', handleResize);
+}
+
+function initializeProgressBar() {
+    const progressFill = document.querySelector('.progress-fill');
+    if (progressFill) {
+        // Simulate progress during loading
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 100) progress = 100;
+            progressFill.style.width = progress + '%';
+            
+            if (progress >= 100) {
+                clearInterval(interval);
+            }
+        }, 200);
+    }
+}
+
+function addRippleEffect(element, event) {
+    const ripple = document.createElement('span');
+    const rect = element.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = event.clientX - rect.left - size / 2;
+    const y = event.clientY - rect.top - size / 2;
+    
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    ripple.classList.add('ripple');
+    
+    element.appendChild(ripple);
+    
+    setTimeout(() => {
+        ripple.remove();
+    }, 600);
+}
+
+function handleKeyboardShortcuts(event) {
+    // Ctrl/Cmd + O to open file dialog
+    if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
+        event.preventDefault();
+        imageInput.click();
+    }
+    
+    // Enter key to start detection when preview is shown
+    if (event.key === 'Enter' && previewSection.style.display === 'block' && !isProcessing) {
+        handleDetection();
+    }
+    
+    // Escape key to reset
+    if (event.key === 'Escape') {
+        resetDetection();
+    }
+}
+
+function handleResize() {
+    // Recalculate parallax positions on resize
+    const shapes = document.querySelectorAll('.shape');
+    const particles = document.querySelectorAll('.particle');
+    
+    shapes.forEach(shape => {
+        shape.style.transform = '';
+    });
+    
+    particles.forEach(particle => {
+        particle.style.transform = '';
+    });
 }
 
 function handleFileSelect(event) {
@@ -101,17 +247,60 @@ function showLoading() {
 function showResults(data) {
     hideAllSections();
     
-    // Update detection count
-    detectionCount.textContent = data.total_detections;
+    // Update detection count with animation
+    animateCounter(detectionCount, 0, data.total_detections, 1000);
+    
+    // Update detection status
+    updateDetectionStatus(data.total_detections);
     
     // Update confidence info
     updateConfidenceInfo(data.detections);
     
-    // Show result image
+    // Show result image with fade effect
+    resultImage.style.opacity = '0';
     resultImage.src = 'data:image/jpeg;base64,' + data.annotated_image;
+    resultImage.onload = () => {
+        resultImage.style.transition = 'opacity 0.5s ease';
+        resultImage.style.opacity = '1';
+    };
     
     resultsSection.style.display = 'block';
     resultsSection.classList.add('fade-in');
+    
+    // Add success animation
+    setTimeout(() => {
+        resultsSection.classList.add('scale-in');
+    }, 100);
+}
+
+function animateCounter(element, start, end, duration) {
+    const startTime = performance.now();
+    
+    function updateCounter(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        const current = Math.floor(start + (end - start) * progress);
+        element.textContent = current;
+        
+        if (progress < 1) {
+            requestAnimationFrame(updateCounter);
+        }
+    }
+    
+    requestAnimationFrame(updateCounter);
+}
+
+function updateDetectionStatus(count) {
+    if (detectionStatus) {
+        if (count > 0) {
+            detectionStatus.className = 'detection-status danger';
+            detectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Threat Detected</span>';
+        } else {
+            detectionStatus.className = 'detection-status safe';
+            detectionStatus.innerHTML = '<i class="fas fa-shield-alt"></i><span>Safe</span>';
+        }
+    }
 }
 
 function updateConfidenceInfo(detections) {
@@ -159,7 +348,22 @@ async function handleDetection() {
         return;
     }
     
+    if (isProcessing) {
+        return;
+    }
+    
+    isProcessing = true;
     showLoading();
+    
+    // Update button state
+    const btnText = detectBtn.querySelector('span');
+    const btnIcon = detectBtn.querySelector('i');
+    const originalText = btnText.textContent;
+    const originalIcon = btnIcon.className;
+    
+    btnText.textContent = 'Analyzing...';
+    btnIcon.className = 'fas fa-spinner fa-spin';
+    detectBtn.disabled = true;
     
     try {
         const formData = new FormData();
@@ -180,12 +384,19 @@ async function handleDetection() {
     } catch (error) {
         console.error('Detection error:', error);
         showError('Network error. Please check your connection and try again.');
+    } finally {
+        // Reset button state
+        btnText.textContent = originalText;
+        btnIcon.className = originalIcon;
+        detectBtn.disabled = false;
+        isProcessing = false;
     }
 }
 
 function resetDetection() {
     selectedFile = null;
     imageInput.value = '';
+    isProcessing = false;
     hideAllSections();
     
     // Reset preview image
@@ -195,6 +406,47 @@ function resetDetection() {
     detectionCount.textContent = '0';
     confidenceInfo.innerHTML = '';
     resultImage.src = '';
+    
+    // Reset detection status
+    if (detectionStatus) {
+        detectionStatus.className = 'detection-status safe';
+        detectionStatus.innerHTML = '<i class="fas fa-shield-alt"></i><span>Safe</span>';
+    }
+    
+    // Reset button state
+    const btnText = detectBtn.querySelector('span');
+    const btnIcon = detectBtn.querySelector('i');
+    btnText.textContent = 'Detect Weapons';
+    btnIcon.className = 'fas fa-search';
+    detectBtn.disabled = false;
+}
+
+function resetUpload() {
+    resetDetection();
+}
+
+function downloadResult() {
+    if (resultImage.src) {
+        const link = document.createElement('a');
+        link.download = 'weapon_detection_result.jpg';
+        link.href = resultImage.src;
+        link.click();
+    }
+}
+
+function shareResult() {
+    if (navigator.share && resultImage.src) {
+        navigator.share({
+            title: 'Weapon Detection Result',
+            text: 'Check out this weapon detection result',
+            url: window.location.href
+        }).catch(console.error);
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Link copied to clipboard!');
+        }).catch(console.error);
+    }
 }
 
 // Utility function to check if model is loaded
@@ -214,48 +466,23 @@ async function checkModelStatus() {
 // Check model status on page load
 checkModelStatus();
 
-// Add some visual feedback for better UX
-document.addEventListener('DOMContentLoaded', function() {
-    // Add loading animation to detect button
-    detectBtn.addEventListener('click', function() {
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
-        this.disabled = true;
-        
-        // Re-enable button after a delay (in case of error)
-        setTimeout(() => {
-            this.innerHTML = '<i class="fas fa-search"></i> Detect Weapons';
-            this.disabled = false;
-        }, 10000);
-    });
-    
-    // Add hover effects
-    const buttons = document.querySelectorAll('button');
-    buttons.forEach(button => {
-        button.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-        });
-        
-        button.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
-});
-
-// Add keyboard shortcuts
-document.addEventListener('keydown', function(event) {
-    // Ctrl/Cmd + O to open file dialog
-    if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
-        event.preventDefault();
-        imageInput.click();
+// Add CSS for ripple effect
+const style = document.createElement('style');
+style.textContent = `
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0);
+        animation: ripple-animation 0.6s linear;
+        pointer-events: none;
     }
     
-    // Enter key to start detection when preview is shown
-    if (event.key === 'Enter' && previewSection.style.display === 'block') {
-        handleDetection();
+    @keyframes ripple-animation {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
     }
-    
-    // Escape key to reset
-    if (event.key === 'Escape') {
-        resetDetection();
-    }
-});
+`;
+document.head.appendChild(style);

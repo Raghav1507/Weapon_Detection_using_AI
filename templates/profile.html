@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - WARS (Weapon Alert & Recognition System)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span>WARS</span>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" onclick="openDetectionModal()">
+                <i class="fas fa-camera"></i>
+                <span>Detect</span>
+            </a>
+            <a href="{{ url_for('alerts') }}" class="nav-link">
+                <i class="fas fa-bell"></i>
+                <span>Alerts</span>
+                <span class="badge" id="alertBadge">0</span>
+            </a>
+            <a href="{{ url_for('profile') }}" class="nav-link active">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+        
+        <div class="nav-user">
+            <div class="user-menu">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="username">{{ session.username }}</span>
+                    <span class="user-role">Security Operator</span>
+                </div>
+                <div class="user-dropdown">
+                    <a href="{{ url_for('profile') }}" class="dropdown-item">
+                        <i class="fas fa-user-cog"></i>
+                        Profile
+                    </a>
+                    <a href="{{ url_for('settings') }}" class="dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <div class="avatar-container">
+                    <i class="fas fa-user-circle"></i>
+                    <div class="avatar-status online"></div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="changeAvatar()">
+                    <i class="fas fa-camera"></i>
+                    Change Photo
+                </button>
+            </div>
+            <div class="profile-info">
+                <h1>{{ session.username }}</h1>
+                <p class="profile-role">Security Operator</p>
+                <p class="profile-email">{{ session.email or 'user@wars-system.com' }}</p>
+                <div class="profile-badges">
+                    <span class="badge badge-primary">Active</span>
+                    <span class="badge badge-success">Verified</span>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button class="btn btn-primary" onclick="editProfile()">
+                    <i class="fas fa-edit"></i>
+                    Edit Profile
+                </button>
+                <a href="{{ url_for('settings') }}" class="btn btn-outline">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ user_stats.total_scans or 0 }}</h3>
+                        <p>Total Scans</p>
+                    </div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+12%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ user_stats.weapon_detections or 0 }}</h3>
+                        <p>Weapons Detected</p>
+                    </div>
+                    <div class="stat-trend danger">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+5%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ user_stats.safe_scans or 0 }}</h3>
+                        <p>Safe Scans</p>
+                    </div>
+                    <div class="stat-trend success">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+8%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ user_stats.avg_response_time or '2.3s' }}</h3>
+                        <p>Avg. Response Time</p>
+                    </div>
+                    <div class="stat-trend success">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>-15%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Details -->
+            <div class="profile-details">
+                <div class="detail-section">
+                    <h3><i class="fas fa-user"></i> Personal Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Full Name</label>
+                            <span>{{ session.full_name or session.username }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Username</label>
+                            <span>{{ session.username }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Email</label>
+                            <span>{{ session.email or 'user@wars-system.com' }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Role</label>
+                            <span>Security Operator</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Member Since</label>
+                            <span>{{ session.join_date or '2024-01-01' }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Last Login</label>
+                            <span>{{ session.last_login or 'Today' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-chart-line"></i> Activity Summary</h3>
+                    <div class="activity-stats">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4>Today's Activity</h4>
+                                <p>{{ user_stats.today_scans or 0 }} scans performed</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-calendar-week"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4>This Week</h4>
+                                <p>{{ user_stats.week_scans or 0 }} scans performed</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4>This Month</h4>
+                                <p>{{ user_stats.month_scans or 0 }} scans performed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-award"></i> Achievements</h3>
+                    <div class="achievements-grid">
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <div class="achievement-content">
+                                <h4>First Detection</h4>
+                                <p>Completed your first weapon detection</p>
+                            </div>
+                            <div class="achievement-status completed">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="achievement-content">
+                                <h4>Scan Master</h4>
+                                <p>Performed 100+ scans</p>
+                            </div>
+                            <div class="achievement-status {{ 'completed' if (user_stats.total_scans or 0) >= 100 else 'pending' }}">
+                                <i class="fas fa-{{ 'check' if (user_stats.total_scans or 0) >= 100 else 'clock' }}"></i>
+                            </div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="achievement-content">
+                                <h4>Alert Expert</h4>
+                                <p>Detected 50+ weapons</p>
+                            </div>
+                            <div class="achievement-status {{ 'completed' if (user_stats.weapon_detections or 0) >= 50 else 'pending' }}">
+                                <i class="fas fa-{{ 'check' if (user_stats.weapon_detections or 0) >= 50 else 'clock' }}"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" value="{{ session.full_name or session.username }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="{{ session.email or 'user@wars-system.com' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    <script>
+        function editProfile() {
+            document.getElementById('editProfileModal').style.display = 'flex';
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').style.display = 'none';
+        }
+
+        function changeAvatar() {
+            alert('Avatar change functionality coming soon!');
+        }
+
+        // Handle form submission
+        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Add form submission logic here
+            alert('Profile updated successfully!');
+            closeEditProfileModal();
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('editProfileModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditProfileModal();
+            }
+        });
+    </script>
+</body>
+</html>

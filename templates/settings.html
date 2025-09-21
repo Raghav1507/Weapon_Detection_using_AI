@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - WARS (Weapon Alert & Recognition System)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span>WARS</span>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" onclick="openDetectionModal()">
+                <i class="fas fa-camera"></i>
+                <span>Detect</span>
+            </a>
+            <a href="{{ url_for('alerts') }}" class="nav-link">
+                <i class="fas fa-bell"></i>
+                <span>Alerts</span>
+                <span class="badge" id="alertBadge">0</span>
+            </a>
+            <a href="{{ url_for('profile') }}" class="nav-link">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+        
+        <div class="nav-user">
+            <div class="user-menu">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="username">{{ session.username }}</span>
+                    <span class="user-role">Security Operator</span>
+                </div>
+                <div class="user-dropdown">
+                    <a href="{{ url_for('profile') }}" class="dropdown-item">
+                        <i class="fas fa-user-cog"></i>
+                        Profile
+                    </a>
+                    <a href="{{ url_for('settings') }}" class="dropdown-item active">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Settings Header -->
+        <div class="settings-header">
+            <h1><i class="fas fa-cog"></i> System Settings</h1>
+            <p>Configure your WARS system preferences and manage data</p>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="settings-content">
+            <!-- General Settings -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-sliders-h"></i> General Settings</h2>
+                    <p>Configure basic system preferences</p>
+                </div>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Auto-save Results</h3>
+                            <p>Automatically save detection results to your account</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Email Notifications</h3>
+                            <p>Receive email alerts for weapon detections</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Sound Alerts</h3>
+                            <p>Play sound notifications for detections</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Dark Mode</h3>
+                            <p>Use dark theme for better visibility</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detection Settings -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-eye"></i> Detection Settings</h2>
+                    <p>Configure weapon detection parameters</p>
+                </div>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Detection Sensitivity</h3>
+                            <p>Adjust how sensitive the detection system is</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-select">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Confidence Threshold</h3>
+                            <p>Minimum confidence level for alerts ({{ confidence_threshold or 75 }}%)</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="range" class="form-range" min="50" max="95" value="{{ confidence_threshold or 75 }}" id="confidenceSlider">
+                            <span class="range-value">{{ confidence_threshold or 75 }}%</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Auto-Process Images</h3>
+                            <p>Automatically process uploaded images</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Management -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-database"></i> Data Management</h2>
+                    <p>Manage your detection data and statistics</p>
+                </div>
+                <div class="data-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>{{ total_scans or 0 }}</h3>
+                            <p>Total Scans</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>{{ weapon_detections or 0 }}</h3>
+                            <p>Weapons Detected</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>{{ safe_scans or 0 }}</h3>
+                            <p>Safe Scans</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-actions">
+                    <button class="btn btn-warning" onclick="resetStatistics()">
+                        <i class="fas fa-redo"></i>
+                        Reset My Statistics
+                    </button>
+                    <button class="btn btn-danger" onclick="clearAllData()">
+                        <i class="fas fa-trash"></i>
+                        Clear My Data
+                    </button>
+                    {% if session.get('is_admin') %}
+                    <button class="btn btn-danger" onclick="resetAllStatistics()" style="background: #dc3545; border-color: #dc3545;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Reset ALL Statistics (Admin)
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-secondary" onclick="exportData()">
+                        <i class="fas fa-download"></i>
+                        Export Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-lock"></i> Security Settings</h2>
+                    <p>Manage your account security</p>
+                </div>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Two-Factor Authentication</h3>
+                            <p>Add an extra layer of security to your account</p>
+                        </div>
+                        <div class="setting-control">
+                            <button class="btn btn-outline btn-sm" onclick="setup2FA()">
+                                <i class="fas fa-shield-alt"></i>
+                                Enable 2FA
+                            </button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Session Timeout</h3>
+                            <p>Automatically log out after inactivity</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-select">
+                                <option value="15">15 minutes</option>
+                                <option value="30" selected>30 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="120">2 hours</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Change Password</h3>
+                            <p>Update your account password</p>
+                        </div>
+                        <div class="setting-control">
+                            <button class="btn btn-outline btn-sm" onclick="changePassword()">
+                                <i class="fas fa-key"></i>
+                                Change Password
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-info-circle"></i> System Information</h2>
+                    <p>WARS system details and version information</p>
+                </div>
+                <div class="system-info">
+                    <div class="info-item">
+                        <label>System Version</label>
+                        <span>WARS v2.1.0</span>
+                    </div>
+                    <div class="info-item">
+                        <label>AI Model</label>
+                        <span>YOLO v8 Enhanced</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Last Update</label>
+                        <span>2024-01-15</span>
+                    </div>
+                    <div class="info-item">
+                        <label>System Status</label>
+                        <span class="status-badge success">Online</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Database Status</label>
+                        <span class="status-badge success">Connected</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Reset Statistics Modal -->
+    <div class="modal" id="resetModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Reset Statistics</h2>
+                <button class="modal-close" onclick="closeResetModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Are you sure?</h3>
+                    <p>This action will reset all your statistics to zero. This includes:</p>
+                    <ul>
+                        <li>Total scans count</li>
+                        <li>Weapon detections count</li>
+                        <li>Safe scans count</li>
+                        <li>Response time averages</li>
+                    </ul>
+                    <p><strong>This action cannot be undone!</strong></p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeResetModal()">Cancel</button>
+                    <button class="btn btn-danger" onclick="confirmReset()">Reset Statistics</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear Data Modal -->
+    <div class="modal" id="clearDataModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-trash"></i> Clear All Data</h2>
+                <button class="modal-close" onclick="closeClearDataModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Danger Zone</h3>
+                    <p>This action will permanently delete:</p>
+                    <ul>
+                        <li>All detection results</li>
+                        <li>All uploaded images</li>
+                        <li>All statistics and history</li>
+                        <li>All alert records</li>
+                    </ul>
+                    <p><strong>This action cannot be undone!</strong></p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeClearDataModal()">Cancel</button>
+                    <button class="btn btn-danger" onclick="confirmClearData()">Clear All Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    <script>
+        // Confidence threshold slider
+        const confidenceSlider = document.getElementById('confidenceSlider');
+        const rangeValue = document.querySelector('.range-value');
+        
+        confidenceSlider.addEventListener('input', function() {
+            rangeValue.textContent = this.value + '%';
+        });
+
+        // Reset Statistics
+        function resetStatistics() {
+            document.getElementById('resetModal').style.display = 'flex';
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').style.display = 'none';
+        }
+
+        function confirmReset() {
+            // Send request to reset statistics
+            fetch('/settings/reset-stats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Statistics reset successfully!');
+                    location.reload();
+                } else {
+                    alert('Error resetting statistics: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error resetting statistics');
+            });
+            
+            closeResetModal();
+        }
+
+        // Clear All Data
+        function clearAllData() {
+            document.getElementById('clearDataModal').style.display = 'flex';
+        }
+
+        function closeClearDataModal() {
+            document.getElementById('clearDataModal').style.display = 'none';
+        }
+
+        function confirmClearData() {
+            // Send request to clear all data
+            fetch('/settings/clear-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('All data cleared successfully!');
+                    location.reload();
+                } else {
+                    alert('Error clearing data: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error clearing data');
+            });
+            
+            closeClearDataModal();
+        }
+
+        // Other functions
+        function exportData() {
+            alert('Data export functionality coming soon!');
+        }
+
+        function setup2FA() {
+            alert('Two-factor authentication setup coming soon!');
+        }
+
+        function changePassword() {
+            alert('Password change functionality coming soon!');
+        }
+
+        function resetAllStatistics() {
+            if (confirm('Are you sure you want to reset ALL statistics for ALL users? This action cannot be undone!')) {
+                fetch('/admin/reset-all-stats', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('All statistics reset successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error resetting statistics: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error resetting statistics');
+                });
+            }
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('resetModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeResetModal();
+            }
+        });
+
+        document.getElementById('clearDataModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeClearDataModal();
+            }
+        });
+    </script>
+</body>
+</html>

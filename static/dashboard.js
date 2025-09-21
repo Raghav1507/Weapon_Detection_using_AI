@@ -367,18 +367,99 @@ function showError(message) {
 }
 
 function acknowledgeAlert(alertId) {
+    // Get the button and alert card elements
+    const button = document.getElementById(`ack-btn-${alertId}`);
+    const alertCard = document.getElementById(`alert-${alertId}`);
+    
+    // Disable button and show loading state
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Accepting...';
+    }
+    
     fetch(`/api/acknowledge_alert/${alertId}`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            loadRecentAlerts(); // Refresh alerts
+            // Show success state briefly
+            if (button) {
+                button.innerHTML = '<i class="fas fa-check"></i> Accepted';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-success');
+            }
+            
+            // Add fade out animation
+            if (alertCard) {
+                alertCard.style.transition = 'all 0.5s ease';
+                alertCard.style.opacity = '0';
+                alertCard.style.transform = 'translateX(-100%)';
+                
+                // Remove from DOM after animation
+                setTimeout(() => {
+                    alertCard.remove();
+                    
+                    // Update alert badge count
+                    updateAlertBadge();
+                    
+                    // Check if no alerts left
+                    const remainingAlerts = document.querySelectorAll('.alert-card');
+                    if (remainingAlerts.length === 0) {
+                        showNoAlertsMessage();
+                    }
+                }, 500);
+            }
+        } else {
+            // Show error state
+            if (button) {
+                button.innerHTML = '<i class="fas fa-times"></i> Error';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-danger');
+                button.disabled = false;
+            }
+            console.error('Error acknowledging alert:', data.error);
         }
     })
     .catch(error => {
         console.error('Error acknowledging alert:', error);
+        // Show error state
+        if (button) {
+            button.innerHTML = '<i class="fas fa-times"></i> Error';
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-danger');
+            button.disabled = false;
+        }
     });
+}
+
+function updateAlertBadge() {
+    const alertBadge = document.getElementById('alertBadge');
+    if (alertBadge) {
+        const remainingAlerts = document.querySelectorAll('.alert-card');
+        const count = remainingAlerts.length;
+        alertBadge.textContent = count;
+        
+        if (count === 0) {
+            alertBadge.style.display = 'none';
+        }
+    }
+}
+
+function showNoAlertsMessage() {
+    const alertsContainer = document.querySelector('.alerts-container');
+    if (alertsContainer) {
+        alertsContainer.innerHTML = `
+            <div class="no-alerts">
+                <i class="fas fa-check-circle"></i>
+                <h3>No Alerts</h3>
+                <p>All clear! No security alerts at this time.</p>
+            </div>
+        `;
+    }
 }
 
 function downloadResult() {

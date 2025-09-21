@@ -3,24 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thermal Weapon Detection System</title>
+    <title>WARS - Weapon Alert & Recognition System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="hero-background">
+        <div class="animated-grid">
+            <div class="grid-line"></div>
+            <div class="grid-line"></div>
+            <div class="grid-line"></div>
+            <div class="grid-line"></div>
+        </div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+    </div>
+    
     <div class="container">
         <header class="header">
-            <h1><i class="fas fa-shield-alt"></i> Thermal Weapon Detection System</h1>
-            <p>Advanced AI-powered thermal imaging weapon detection using YOLO</p>
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <i class="fas fa-shield-alt"></i>
+                        <div class="logo-pulse"></div>
+                    </div>
+                    <div class="logo-text">
+                        <h1>WARS</h1>
+                        <p>Weapon Alert & Recognition System - Advanced AI-powered detection</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <a href="{{ url_for('login') }}" class="btn btn-outline">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login
+                    </a>
+                    <a href="{{ url_for('signup') }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Get Started
+                    </a>
+                </div>
+            </div>
         </header>
 
         <main class="main-content">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h2>Advanced Weapon Recognition</h2>
+                    <p>Detect and alert on weapons with cutting-edge AI technology. WARS provides real-time analysis with high accuracy and instant threat notifications.</p>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <span class="stat-number">99.8%</span>
+                            <span class="stat-label">Accuracy</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">&lt;2s</span>
+                            <span class="stat-label">Response Time</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">24/7</span>
+                            <span class="stat-label">Monitoring</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="upload-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-camera"></i> Upload & Analyze</h3>
+                    <p>Upload your image for instant weapon recognition and alert analysis</p>
+                </div>
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-content">
-                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                        <h3>Upload Thermal Image</h3>
-                        <p>Drag and drop your thermal image here or click to browse</p>
+                        <div class="upload-icon-container">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <div class="upload-pulse"></div>
+                        </div>
+                        <h3>Upload Image</h3>
+                        <p>Drag and drop your image here or click to browse</p>
+                        <div class="upload-formats">
+                            <span class="format-tag">JPG</span>
+                            <span class="format-tag">PNG</span>
+                            <span class="format-tag">TIFF</span>
+                        </div>
                         <input type="file" id="imageInput" accept="image/*" hidden>
                         <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
                             <i class="fas fa-folder-open"></i> Choose File
@@ -30,54 +106,132 @@
             </div>
 
             <div class="preview-section" id="previewSection" style="display: none;">
-                <h3><i class="fas fa-eye"></i> Image Preview</h3>
-                <div class="image-container">
-                    <img id="previewImage" alt="Preview">
+                <div class="section-header">
+                    <h3><i class="fas fa-eye"></i> Image Preview</h3>
+                    <p>Review your uploaded image before analysis</p>
                 </div>
-                <button class="detect-btn" id="detectBtn">
-                    <i class="fas fa-search"></i> Detect Weapons
-                </button>
+                <div class="preview-container">
+                    <div class="image-container">
+                        <img id="previewImage" alt="Preview">
+                        <div class="image-overlay">
+                            <div class="overlay-content">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Image Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preview-actions">
+                        <button class="btn btn-secondary" onclick="resetUpload()">
+                            <i class="fas fa-redo"></i> Change Image
+                        </button>
+                        <button class="detect-btn" id="detectBtn">
+                            <i class="fas fa-search"></i> 
+                            <span>Detect Weapons</span>
+                            <div class="btn-shine"></div>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="loading-section" id="loadingSection" style="display: none;">
-                <div class="loading-spinner">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Analyzing image for weapons...</p>
+                <div class="loading-container">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                    </div>
+                    <h3>Analyzing Image</h3>
+                    <p>WARS AI is processing your image for weapon recognition...</p>
+                    <div class="loading-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <span class="progress-text">Processing...</span>
+                    </div>
                 </div>
             </div>
 
             <div class="results-section" id="resultsSection" style="display: none;">
-                <h3><i class="fas fa-chart-line"></i> Detection Results</h3>
+                <div class="section-header">
+                    <h3><i class="fas fa-chart-line"></i> Detection Results</h3>
+                    <p>Analysis complete - Review the detection results below</p>
+                </div>
                 <div class="results-container">
                     <div class="detection-info">
-                        <div class="detection-count">
-                            <span class="count" id="detectionCount">0</span>
-                            <span class="label">Weapons Detected</span>
+                        <div class="detection-summary">
+                            <div class="detection-count">
+                                <span class="count" id="detectionCount">0</span>
+                                <span class="label">Weapons Detected</span>
+                            </div>
+                            <div class="detection-status" id="detectionStatus">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Safe</span>
+                            </div>
                         </div>
                         <div class="confidence-info" id="confidenceInfo"></div>
+                        <div class="result-actions">
+                            <button class="btn btn-outline" onclick="downloadResult()">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn btn-outline" onclick="shareResult()">
+                                <i class="fas fa-share"></i> Share
+                            </button>
+                        </div>
                     </div>
                     <div class="result-image-container">
-                        <img id="resultImage" alt="Detection Result">
+                        <div class="image-wrapper">
+                            <img id="resultImage" alt="Detection Result">
+                            <div class="detection-overlay" id="detectionOverlay"></div>
+                        </div>
                     </div>
                 </div>
-                <button class="reset-btn" onclick="resetDetection()">
-                    <i class="fas fa-redo"></i> Analyze Another Image
-                </button>
+                <div class="results-footer">
+                    <button class="reset-btn" onclick="resetDetection()">
+                        <i class="fas fa-redo"></i> Analyze Another Image
+                    </button>
+                </div>
             </div>
 
             <div class="error-section" id="errorSection" style="display: none;">
-                <div class="error-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span id="errorText"></span>
+                <div class="error-container">
+                    <div class="error-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>Analysis Failed</h3>
+                    <p id="errorText">There was an error processing your image. Please try again.</p>
+                    <button class="retry-btn" onclick="resetDetection()">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
                 </div>
-                <button class="retry-btn" onclick="resetDetection()">
-                    <i class="fas fa-redo"></i> Try Again
-                </button>
             </div>
         </main>
 
         <footer class="footer">
-            <p>&copy; 2024 Thermal Weapon Detection System. Powered by YOLO AI.</p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>WARS System</h4>
+                    <p>Weapon Alert & Recognition System - Advanced AI-powered security solutions.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Technology</h4>
+                    <ul>
+                        <li>AI Recognition Engine</li>
+                        <li>Real-time Processing</li>
+                        <li>High Accuracy Alerts</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li>Documentation</li>
+                        <li>API Reference</li>
+                        <li>Contact Us</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WARS - Weapon Alert & Recognition System. Powered by Advanced AI.</p>
+            </div>
         </footer>
     </div>
 

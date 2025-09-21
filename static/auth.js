@@ -1,6 +1,8 @@
-// Authentication JavaScript
+// Modern Authentication JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     initializeAuth();
+    initializeAnimations();
+    initializeFormInteractions();
 });
 
 function initializeAuth() {
@@ -27,6 +29,63 @@ function initializeAuth() {
     
     // Add form animations
     addFormAnimations();
+    
+    // Initialize login form
+    const loginForm = document.querySelector('form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLoginSubmit);
+    }
+}
+
+function initializeAnimations() {
+    // Stagger animation for form elements
+    const formGroups = document.querySelectorAll('.form-group');
+    formGroups.forEach((group, index) => {
+        group.style.animationDelay = `${index * 0.1}s`;
+        group.classList.add('fade-in-up');
+    });
+    
+    // Animate features
+    const features = document.querySelectorAll('.feature');
+    features.forEach((feature, index) => {
+        feature.style.animationDelay = `${index * 0.2}s`;
+    });
+    
+    // Add mouse parallax effect
+    addParallaxEffect();
+}
+
+function initializeFormInteractions() {
+    // Enhanced input interactions
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+            addRippleEffect(this);
+        });
+        
+        input.addEventListener('blur', function() {
+            if (this.value === '') {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.value) {
+                this.parentElement.classList.add('has-value');
+            } else {
+                this.parentElement.classList.remove('has-value');
+            }
+        });
+    });
+    
+    // Button interactions
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            addRippleEffect(this, e);
+        });
+    });
 }
 
 function checkPasswordStrength() {
@@ -113,18 +172,92 @@ function validateSignupForm(event) {
 
 function togglePassword(inputId = 'password') {
     const input = document.getElementById(inputId);
-    const button = input.nextElementSibling;
+    const button = input.parentElement.querySelector('.password-toggle');
     const icon = button.querySelector('i');
     
     if (input.type === 'password') {
         input.type = 'text';
         icon.classList.remove('fa-eye');
         icon.classList.add('fa-eye-slash');
+        button.style.color = '#667eea';
     } else {
         input.type = 'password';
         icon.classList.remove('fa-eye-slash');
         icon.classList.add('fa-eye');
+        button.style.color = '#718096';
     }
+    
+    // Add animation
+    button.style.transform = 'translateY(-50%) scale(1.2)';
+    setTimeout(() => {
+        button.style.transform = 'translateY(-50%) scale(1)';
+    }, 150);
+}
+
+function handleLoginSubmit(event) {
+    const form = event.target;
+    const submitBtn = form.querySelector('.btn-primary');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    const btnIcon = submitBtn.querySelector('.btn-icon');
+    
+    // Show loading state
+    btnText.style.opacity = '0';
+    btnLoader.style.display = 'block';
+    btnIcon.style.display = 'none';
+    submitBtn.disabled = true;
+    
+    // Simulate loading (remove this in production)
+    setTimeout(() => {
+        // Reset button state if needed
+        btnText.style.opacity = '1';
+        btnLoader.style.display = 'none';
+        btnIcon.style.display = 'inline';
+        submitBtn.disabled = false;
+    }, 2000);
+}
+
+function addRippleEffect(element, event = null) {
+    const ripple = document.createElement('span');
+    const rect = element.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = event ? event.clientX - rect.left - size / 2 : size / 2;
+    const y = event ? event.clientY - rect.top - size / 2 : size / 2;
+    
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    ripple.classList.add('ripple');
+    
+    element.appendChild(ripple);
+    
+    setTimeout(() => {
+        ripple.remove();
+    }, 600);
+}
+
+function addParallaxEffect() {
+    const shapes = document.querySelectorAll('.shape');
+    const particles = document.querySelectorAll('.particle');
+    
+    document.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+        
+        shapes.forEach((shape, index) => {
+            const speed = (index + 1) * 0.5;
+            const x = (mouseX - 0.5) * speed;
+            const y = (mouseY - 0.5) * speed;
+            shape.style.transform = `translate(${x}px, ${y}px)`;
+        });
+        
+        particles.forEach((particle, index) => {
+            const speed = (index + 1) * 0.3;
+            const x = (mouseX - 0.5) * speed;
+            const y = (mouseY - 0.5) * speed;
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+        });
+    });
 }
 
 function addFloatingLabels() {
@@ -184,7 +317,7 @@ function showError(message) {
     }, 5000);
 }
 
-// Add CSS for animations
+// Add CSS for animations and effects
 const style = document.createElement('style');
 style.textContent = `
     .form-group {
@@ -201,6 +334,10 @@ style.textContent = `
     .form-group.focused input {
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-group.has-value label {
+        color: #667eea;
     }
     
     @keyframes fadeInUp {
@@ -225,6 +362,47 @@ style.textContent = `
     
     .form-group input:valid {
         border-color: #48bb78;
+    }
+    
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0);
+        animation: ripple-animation 0.6s linear;
+        pointer-events: none;
+    }
+    
+    @keyframes ripple-animation {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.15),
+            0 0 0 1px rgba(255, 255, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    
+    .feature:hover {
+        transform: translateY(-5px);
+    }
+    
+    .feature i {
+        transition: all 0.3s ease;
+    }
+    
+    .feature:hover i {
+        transform: scale(1.1);
+        color: rgba(255, 255, 255, 1);
     }
 `;
 document.head.appendChild(style);

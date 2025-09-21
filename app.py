@@ -124,6 +124,30 @@ def load_model():
         print("3. The model is compatible with the current PyTorch version")
         return False
 
+def reset_all_statistics():
+    """Reset all statistics when app starts"""
+    try:
+        # Delete all detection records
+        all_detections = Detection.query.all()
+        
+        # Delete uploaded files
+        for detection in all_detections:
+            if detection.image_path and os.path.exists(os.path.join(UPLOAD_FOLDER, detection.image_path)):
+                try:
+                    os.remove(os.path.join(UPLOAD_FOLDER, detection.image_path))
+                except OSError:
+                    pass  # File might already be deleted
+        
+        # Clear all data
+        Detection.query.delete()
+        Alert.query.delete()
+        
+        db.session.commit()
+        print("All statistics reset successfully")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error resetting statistics: {e}")
+
 def preprocess_image(image):
     """Convert PIL image to format suitable for YOLO"""
     # Convert PIL to OpenCV format
@@ -457,6 +481,174 @@ def acknowledge_alert(alert_id):
     
     return jsonify({'success': True})
 
+# Profile and Settings Routes
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    if not user:
+        return redirect(url_for('login'))
+    
+    # Get user statistics - start fresh for each session
+    total_scans = Detection.query.filter_by(user_id=session['user_id']).count()
+    
+    # Count weapon detections by checking if detections JSON contains weapon classes
+    all_detections = Detection.query.filter_by(user_id=session['user_id']).all()
+    weapon_detections = 0
+    for detection in all_detections:
+        try:
+            detections_data = json.loads(detection.detections)
+            if detections_data and len(detections_data) > 0:
+                weapon_detections += 1
+        except (json.JSONDecodeError, TypeError):
+            continue
+    
+    safe_scans = total_scans - weapon_detections
+    
+    # Calculate average response time (mock data for now)
+    avg_response_time = "2.3s"
+    
+    # Get activity stats
+    today = datetime.now().date()
+    week_ago = today - timedelta(days=7)
+    month_ago = today - timedelta(days=30)
+    
+    today_scans = Detection.query.filter(
+        Detection.user_id == session['user_id'],
+        Detection.timestamp >= today
+    ).count()
+    
+    week_scans = Detection.query.filter(
+        Detection.user_id == session['user_id'],
+        Detection.timestamp >= week_ago
+    ).count()
+    
+    month_scans = Detection.query.filter(
+        Detection.user_id == session['user_id'],
+        Detection.timestamp >= month_ago
+    ).count()
+    
+    user_stats = {
+        'total_scans': total_scans,
+        'weapon_detections': weapon_detections,
+        'safe_scans': safe_scans,
+        'avg_response_time': avg_response_time,
+        'today_scans': today_scans,
+        'week_scans': week_scans,
+        'month_scans': month_scans
+    }
+    
+    return render_template('profile.html', user_stats=user_stats)
+
+@app.route('/settings')
+def settings():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Get user statistics for settings page
+    total_scans = Detection.query.filter_by(user_id=session['user_id']).count()
+    
+    # Count weapon detections by checking if detections JSON contains weapon classes
+    all_detections = Detection.query.filter_by(user_id=session['user_id']).all()
+    weapon_detections = 0
+    for detection in all_detections:
+        try:
+            detections_data = json.loads(detection.detections)
+            if detections_data and len(detections_data) > 0:
+                weapon_detections += 1
+        except (json.JSONDecodeError, TypeError):
+            continue
+    
+    safe_scans = total_scans - weapon_detections
+    
+    return render_template('settings.html', 
+                         total_scans=total_scans,
+                         weapon_detections=weapon_detections,
+                         safe_scans=safe_scans,
+                         confidence_threshold=75)
+
+@app.route('/settings/reset-stats', methods=['POST'])
+def reset_statistics():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Authentication required'}), 401
+    
+    try:
+        # Reset user statistics by deleting all detection records for this user
+        user_detections = Detection.query.filter_by(user_id=session['user_id']).all()
+        
+        # Delete uploaded files
+        for detection in user_detections:
+            if detection.image_path and os.path.exists(os.path.join(UPLOAD_FOLDER, detection.image_path)):
+                try:
+                    os.remove(os.path.join(UPLOAD_FOLDER, detection.image_path))
+                except OSError:
+                    pass  # File might already be deleted
+        
+        # Delete all user's detections and related alerts
+        Detection.query.filter_by(user_id=session['user_id']).delete()
+        Alert.query.join(Detection).filter(Detection.user_id == session['user_id']).delete()
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Statistics reset successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/settings/clear-data', methods=['POST'])
+def clear_all_data():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Authentication required'}), 401
+    
+    try:
+        # Get user's detections first to delete associated files
+        user_detections = Detection.query.filter_by(user_id=session['user_id']).all()
+        
+        # Delete uploaded files
+        for detection in user_detections:
+            if detection.image_path and os.path.exists(os.path.join(UPLOAD_FOLDER, detection.image_path)):
+                try:
+                    os.remove(os.path.join(UPLOAD_FOLDER, detection.image_path))
+                except OSError:
+                    pass  # File might already be deleted
+        
+        # Delete all user's detections and related data
+        Detection.query.filter_by(user_id=session['user_id']).delete()
+        Alert.query.join(Detection).filter(Detection.user_id == session['user_id']).delete()
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'All data cleared successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/reset-all-stats', methods=['POST'])
+def admin_reset_all_statistics():
+    """Admin route to reset all statistics for all users"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Authentication required'}), 401
+    
+    # Check if user is admin
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    try:
+        reset_all_statistics()
+        return jsonify({'success': True, 'message': 'All statistics reset successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/reset-stats-now', methods=['GET'])
+def reset_stats_now():
+    """Quick route to reset all statistics (for testing)"""
+    try:
+        reset_all_statistics()
+        return "All statistics reset successfully! <a href='/dashboard'>Go to Dashboard</a>"
+    except Exception as e:
+        return f"Error: {e}"
+
 if __name__ == '__main__':
     # Create database tables
     with app.app_context():
@@ -467,13 +659,17 @@ if __name__ == '__main__':
         if not admin:
             admin = User(
                 username='admin',
-                email='admin@weapondetection.com',
+                email='admin@wars-system.com',
                 password_hash=generate_password_hash('admin123'),
                 is_admin=True
             )
             db.session.add(admin)
             db.session.commit()
             print("Admin user created: username=admin, password=admin123")
+        
+        # Reset all statistics when app starts
+        print("Resetting all statistics on startup...")
+        reset_all_statistics()
     
     # Load model on startup
     load_model()

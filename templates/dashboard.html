@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Thermal Weapon Detection System</title>
+    <title>Dashboard - WARS (Weapon Alert & Recognition System)</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
     <nav class="navbar">
         <div class="nav-brand">
             <i class="fas fa-shield-alt"></i>
-            <span>Thermal Detection</span>
+            <span>WARS</span>
         </div>
         
         <div class="nav-menu">
@@ -30,6 +30,10 @@
                 <span>Alerts</span>
                 <span class="badge" id="alertBadge">0</span>
             </a>
+            <a href="{{ url_for('profile') }}" class="nav-link">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
         </div>
         
         <div class="nav-user">
@@ -42,11 +46,11 @@
                     <span class="user-role">Security Operator</span>
                 </div>
                 <div class="user-dropdown">
-                    <a href="#" class="dropdown-item">
+                    <a href="{{ url_for('profile') }}" class="dropdown-item">
                         <i class="fas fa-user-cog"></i>
                         Profile
                     </a>
-                    <a href="#" class="dropdown-item">
+                    <a href="{{ url_for('settings') }}" class="dropdown-item">
                         <i class="fas fa-cog"></i>
                         Settings
                     </a>
@@ -59,22 +63,48 @@
         </div>
     </nav>
 
+    <!-- Simplified Background Elements -->
+    <div class="floating-elements">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+    </div>
+
     <!-- Main Content -->
     <main class="main-content">
         <!-- Welcome Section -->
         <div class="welcome-section">
             <div class="welcome-content">
+                <div class="welcome-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>WARS SYSTEM ACTIVE</span>
+                </div>
                 <h1>Welcome back, {{ session.username }}!</h1>
-                <p>Monitor and detect weapons in thermal images with our advanced AI system</p>
+                <p>Advanced AI-powered weapon detection and recognition system</p>
+                <div class="welcome-stats">
+                    <div class="mini-stat">
+                        <span class="mini-stat-number">99.8%</span>
+                        <span class="mini-stat-label">Accuracy</span>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-stat-number">&lt;2s</span>
+                        <span class="mini-stat-label">Response</span>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-stat-number">24/7</span>
+                        <span class="mini-stat-label">Monitoring</span>
+                    </div>
+                </div>
             </div>
             <div class="welcome-actions">
                 <button class="btn btn-primary" onclick="openDetectionModal()">
                     <i class="fas fa-camera"></i>
-                    Start Detection
+                    <span>Start Detection</span>
+                    <div class="btn-shine"></div>
                 </button>
                 <button class="btn btn-secondary" onclick="viewAlerts()">
                     <i class="fas fa-bell"></i>
-                    View Alerts
+                    <span>View Alerts</span>
                 </button>
             </div>
         </div>
@@ -143,7 +173,7 @@
             <!-- Detection Interface -->
             <div class="detection-panel">
                 <div class="panel-header">
-                    <h2><i class="fas fa-camera"></i> Weapon Detection</h2>
+                    <h2><i class="fas fa-camera"></i> Weapon Recognition</h2>
                     <button class="btn btn-primary" onclick="openDetectionModal()">
                         <i class="fas fa-plus"></i>
                         New Detection
@@ -154,8 +184,8 @@
                     <div class="upload-area" id="uploadArea">
                         <div class="upload-content">
                             <i class="fas fa-cloud-upload-alt"></i>
-                            <h3>Upload Thermal Image</h3>
-                            <p>Drag and drop your thermal image here or click to browse</p>
+                        <h3>Upload Image</h3>
+                        <p>Drag and drop your image here or click to browse</p>
                             <input type="file" id="imageInput" accept="image/*" hidden>
                             <button class="btn btn-secondary" onclick="document.getElementById('imageInput').click()">
                                 <i class="fas fa-folder-open"></i>
@@ -286,8 +316,8 @@
                     <div class="upload-area" id="modalUploadArea">
                         <div class="upload-content">
                             <i class="fas fa-cloud-upload-alt"></i>
-                            <h3>Upload Thermal Image</h3>
-                            <p>Drag and drop your thermal image here or click to browse</p>
+                        <h3>Upload Image</h3>
+                        <p>Drag and drop your image here or click to browse</p>
                             <input type="file" id="modalImageInput" accept="image/*" hidden>
                             <button class="btn btn-primary" onclick="document.getElementById('modalImageInput').click()">
                                 <i class="fas fa-folder-open"></i>
@@ -300,7 +330,7 @@
                         <div class="progress-spinner">
                             <i class="fas fa-spinner fa-spin"></i>
                         </div>
-                        <p>Analyzing image for weapons...</p>
+                        <p>WARS AI analyzing image for weapons...</p>
                     </div>
                     
                     <div class="detection-results" id="modalDetectionResults" style="display: none;">

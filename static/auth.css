@@ -7,9 +7,30 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
     min-height: 100vh;
     overflow-x: hidden;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+    animation: backgroundShift 20s ease-in-out infinite;
+    z-index: -1;
+}
+
+@keyframes backgroundShift {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
 }
 
 .auth-container {
@@ -24,6 +45,54 @@ body {
     overflow: hidden;
 }
 
+.animated-grid {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0.1;
+}
+
+.grid-line {
+    position: absolute;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: gridMove 20s linear infinite;
+}
+
+.grid-line:nth-child(1) {
+    width: 100%;
+    height: 1px;
+    top: 20%;
+    animation-delay: 0s;
+}
+
+.grid-line:nth-child(2) {
+    width: 100%;
+    height: 1px;
+    top: 40%;
+    animation-delay: -5s;
+}
+
+.grid-line:nth-child(3) {
+    width: 100%;
+    height: 1px;
+    top: 60%;
+    animation-delay: -10s;
+}
+
+.grid-line:nth-child(4) {
+    width: 100%;
+    height: 1px;
+    top: 80%;
+    animation-delay: -15s;
+}
+
+@keyframes gridMove {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
 .floating-shapes {
     position: absolute;
     width: 100%;
@@ -32,11 +101,83 @@ body {
     left: 0;
 }
 
+.particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: particleFloat 15s linear infinite;
+}
+
+.particle:nth-child(1) {
+    top: 10%;
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.particle:nth-child(2) {
+    top: 30%;
+    left: 80%;
+    animation-delay: -3s;
+}
+
+.particle:nth-child(3) {
+    top: 60%;
+    left: 10%;
+    animation-delay: -6s;
+}
+
+.particle:nth-child(4) {
+    top: 80%;
+    left: 70%;
+    animation-delay: -9s;
+}
+
+.particle:nth-child(5) {
+    top: 40%;
+    left: 50%;
+    animation-delay: -12s;
+}
+
+.particle:nth-child(6) {
+    top: 70%;
+    left: 30%;
+    animation-delay: -15s;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
 .shape {
     position: absolute;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.1);
     animation: float 6s ease-in-out infinite;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .shape-1 {
@@ -45,6 +186,7 @@ body {
     top: 20%;
     left: 10%;
     animation-delay: 0s;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
 }
 
 .shape-2 {
@@ -53,6 +195,7 @@ body {
     top: 60%;
     right: 15%;
     animation-delay: 2s;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
 }
 
 .shape-3 {
@@ -61,6 +204,7 @@ body {
     top: 40%;
     left: 70%;
     animation-delay: 4s;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
 }
 
 .shape-4 {
@@ -69,6 +213,25 @@ body {
     bottom: 20%;
     left: 30%;
     animation-delay: 1s;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
+}
+
+.shape-5 {
+    width: 70px;
+    height: 70px;
+    top: 10%;
+    right: 30%;
+    animation-delay: 3s;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05));
+}
+
+.shape-6 {
+    width: 90px;
+    height: 90px;
+    bottom: 40%;
+    right: 10%;
+    animation-delay: 5s;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
 }
 
 @keyframes float {
@@ -81,14 +244,35 @@ body {
     max-width: 450px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-radius: 24px;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
     margin: 20px;
     padding: 40px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     animation: slideInRight 0.8s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    animation: rotate 10s linear infinite;
+    z-index: -1;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 @keyframes slideInRight {
@@ -115,15 +299,59 @@ body {
     margin-bottom: 15px;
 }
 
-.logo i {
+.logo-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-icon i {
     font-size: 2.5rem;
     color: #667eea;
     animation: pulse 2s infinite;
+    z-index: 2;
+    position: relative;
+}
+
+.logo-pulse {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    border-radius: 50%;
+    animation: logoPulse 2s infinite;
 }
 
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
+}
+
+@keyframes logoPulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+}
+
+.security-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    animation: fadeInUp 0.6s ease-out 0.3s both;
 }
 
 .logo h1 {
@@ -211,14 +439,20 @@ body {
     width: 16px;
 }
 
+.input-container {
+    position: relative;
+}
+
 .form-group input {
     width: 100%;
     padding: 12px 16px;
     border: 2px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 1rem;
     transition: all 0.3s ease;
     background: #fff;
+    position: relative;
+    z-index: 2;
 }
 
 .form-group input:focus {
@@ -226,6 +460,21 @@ body {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     transform: translateY(-1px);
+}
+
+.input-focus-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.3s ease;
+    z-index: 3;
+}
+
+.form-group input:focus + .input-focus-line {
+    width: 100%;
 }
 
 .password-toggle {
@@ -239,11 +488,14 @@ body {
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    z-index: 4;
 }
 
 .password-toggle:hover {
     color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateY(-50%) scale(1.1);
 }
 
 .input-hint {
@@ -372,11 +624,50 @@ body {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-text {
+    transition: opacity 0.3s ease;
+}
+
+.btn-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-icon {
+    transition: transform 0.3s ease;
+}
+
+.btn-primary:hover .btn-icon {
+    transform: translateX(3px);
 }
 
 .btn-secondary {
